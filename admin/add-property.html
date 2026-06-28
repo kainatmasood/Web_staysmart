@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Property - StaySmart AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; padding-top: 70px; }
+        
+        .navbar { background: white; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; top: 0; width: 100%; z-index: 1000; }
+        .navbar-brand { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            max-width: 800px;
+            margin: 30px auto;
+        }
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); border: none; padding: 12px 30px; border-radius: 12px; font-weight: 600; color: white; transition: 0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.3); }
+        .btn-secondary { background: #e5e7eb; border: none; padding: 12px 30px; border-radius: 12px; font-weight: 600; color: #4b5563; }
+        .btn-secondary:hover { background: #d1d5db; }
+        
+        .page-header { background: linear-gradient(135deg, #667eea, #764ba2); padding: 40px 0; color: white; text-align: center; margin-bottom: 30px; }
+        .page-header h2 { font-weight: 800; }
+        
+        .toast-notification { position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; background: white; border-radius: 12px; padding: 15px 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-left: 4px solid #10B981; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="container">
+        <a class="navbar-brand" href="../index.html"><i class="fas fa-home"></i> StaySmart AI</a>
+        <div>
+            <a href="dashboard.html" class="btn btn-outline-primary btn-sm me-2">Dashboard</a>
+            <a href="properties.html" class="btn btn-outline-secondary btn-sm">Properties</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h2><i class="fas fa-plus-circle"></i> Add New Property</h2>
+        <p>Fill in the details below to list your property</p>
+    </div>
+</div>
+
+<!-- Form -->
+<div class="container">
+    <div class="form-card">
+        <form id="addPropertyForm">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Property Name *</label>
+                    <input type="text" class="form-control" id="propName" placeholder="e.g., Luxury Studio F-7" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Location *</label>
+                    <input type="text" class="form-control" id="propLocation" placeholder="e.g., Islamabad" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Monthly Rent (PKR) *</label>
+                    <input type="number" class="form-control" id="propPrice" placeholder="45000" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Bedrooms *</label>
+                    <select class="form-select" id="propBeds" required>
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5+</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Bathrooms *</label>
+                    <select class="form-select" id="propBaths" required>
+                        <option value="1">1</option>
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Property Type *</label>
+                    <select class="form-select" id="propType" required>
+                        <option value="Apartment">Apartment</option>
+                        <option value="House">House</option>
+                        <option value="Studio">Studio</option>
+                        <option value="Penthouse">Penthouse</option>
+                        <option value="Room">Room</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Lifestyle</label>
+                    <select class="form-select" id="propLifestyle">
+                        <option value="Quiet">Quiet / Study</option>
+                        <option value="Social">Social</option>
+                        <option value="Family">Family</option>
+                        <option value="Professional">Professional</option>
+                        <option value="Student">Student</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Address / Description *</label>
+                    <textarea class="form-control" id="propDescription" rows="3" placeholder="Enter full address and description..." required></textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Image URL</label>
+                    <input type="text" class="form-control" id="propImage" placeholder="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267">
+                    <small class="text-muted">Paste a valid image URL (Unsplash, etc.)</small>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-bold">Amenities</label>
+                    <input type="text" class="form-control" id="propAmenities" placeholder="WiFi, AC, Parking, Security">
+                    <small class="text-muted">Separate with commas</small>
+                </div>
+                <div class="col-12">
+                    <hr>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> List Property
+                    </button>
+                    <a href="properties.html" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// ============================================
+// CHECK IF USER IS LOGGED IN
+// ============================================
+function checkAuth() {
+    const user = JSON.parse(localStorage.getItem('staySmartUser'));
+    if (!user) {
+        window.location.href = '../index.html';
+        return null;
+    }
+    return user;
+}
+
+const currentUser = checkAuth();
+if (!currentUser) {
+    window.location.href = '../index.html';
+}
+
+// ============================================
+// HANDLE FORM SUBMISSION
+// ============================================
+document.getElementById('addPropertyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Get form values
+    const name = document.getElementById('propName').value;
+    const location = document.getElementById('propLocation').value;
+    const price = parseInt(document.getElementById('propPrice').value);
+    const beds = parseInt(document.getElementById('propBeds').value);
+    const baths = parseInt(document.getElementById('propBaths').value);
+    const type = document.getElementById('propType').value;
+    const lifestyle = document.getElementById('propLifestyle').value;
+    const description = document.getElementById('propDescription').value;
+    const image = document.getElementById('propImage').value || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267';
+    const amenities = document.getElementById('propAmenities').value;
+    
+    // Validate required fields
+    if (!name || !location || !price || !description) {
+        showNotification('Please fill all required fields', 'error');
+        return;
+    }
+    
+    // Create property object
+    const property = {
+        id: Date.now(),
+        name: name,
+        location: location,
+        price: price,
+        beds: beds,
+        baths: baths,
+        type: type,
+        lifestyle: lifestyle,
+        description: description,
+        image: image,
+        amenities: amenities,
+        status: 'available',
+        sellerEmail: currentUser.email,
+        sellerName: currentUser.name,
+        date: new Date().toLocaleDateString(),
+        rating: 4.5,
+        isAvailable: true
+    };
+    
+    // Save to shared storage
+    let allProperties = JSON.parse(localStorage.getItem('allProperties') || '[]');
+    allProperties.push(property);
+    localStorage.setItem('allProperties', JSON.stringify(allProperties));
+    
+    showNotification('✅ Property listed successfully!');
+    
+    // Redirect back to properties page
+    setTimeout(() => {
+        window.location.href = 'properties.html';
+    }, 1500);
+});
+
+// ============================================
+// NOTIFICATION FUNCTION
+// ============================================
+function showNotification(message, type) {
+    const n = document.createElement('div');
+    n.className = 'toast-notification';
+    n.style.borderLeftColor = type === 'error' ? '#EF4444' : '#10B981';
+    n.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i> ${message}`;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 3000);
+}
+</script>
+
+</body>
+</html>

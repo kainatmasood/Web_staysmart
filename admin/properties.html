@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Properties - StaySmart AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; padding-top: 70px; }
+        
+        .navbar { background: white; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; top: 0; width: 100%; z-index: 1000; }
+        .navbar-brand { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .page-header { background: linear-gradient(135deg, #667eea, #764ba2); padding: 40px 0; color: white; text-align: center; }
+        .page-header h2 { font-weight: 800; }
+        
+        .property-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; transition: 0.3s; border: 1px solid #e5e7eb; }
+        .property-card:hover { transform: translateX(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-pending { background: #fed7aa; color: #92400e; }
+        .status-rented { background: #e0e7ff; color: #3730a3; }
+        
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); border: none; padding: 8px 20px; border-radius: 10px; font-weight: 600; color: white; transition: 0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.3); }
+        .btn-danger { background: #ef4444; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 600; color: white; transition: 0.3s; }
+        .btn-danger:hover { background: #dc2626; }
+        
+        .empty-state { text-align: center; padding: 60px 20px; }
+        .empty-state i { font-size: 4rem; color: #d1d5db; margin-bottom: 20px; }
+        .empty-state h4 { color: #4b5563; }
+        .empty-state p { color: #6b7280; }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="container">
+        <a class="navbar-brand" href="../index.html"><i class="fas fa-home"></i> StaySmart AI</a>
+        <div>
+            <a href="dashboard.html" class="btn btn-outline-primary btn-sm me-2">Dashboard</a>
+            <a href="add-property.html" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Add Property
+            </a>
+        </div>
+    </div>
+</nav>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="container">
+        <h2><i class="fas fa-building"></i> My Properties</h2>
+        <p>Manage your property listings</p>
+    </div>
+</div>
+
+<!-- Properties List -->
+<div class="container py-4">
+    <div id="propertiesList">
+        <div class="empty-state">
+            <i class="fas fa-building"></i>
+            <h4>No Properties Listed Yet</h4>
+            <p>Click "Add Property" to list your first property.</p>
+            <a href="add-property.html" class="btn btn-primary mt-3">
+                <i class="fas fa-plus"></i> Add Property
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================
+// CHECK AUTH
+// ============================================
+function checkAuth() {
+    const user = JSON.parse(localStorage.getItem('staySmartUser'));
+    if (!user) {
+        window.location.href = '../index.html';
+        return null;
+    }
+    return user;
+}
+
+const currentUser = checkAuth();
+
+// ============================================
+// LOAD PROPERTIES
+// ============================================
+function loadProperties() {
+    const allProperties = JSON.parse(localStorage.getItem('allProperties') || '[]');
+    const myProperties = allProperties.filter(p => p.sellerEmail === currentUser.email);
+    
+    const container = document.getElementById('propertiesList');
+    
+    if (myProperties.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-building"></i>
+                <h4>No Properties Listed Yet</h4>
+                <p>Click "Add Property" to list your first property.</p>
+                <a href="add-property.html" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus"></i> Add Property
+                </a>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = myProperties.map((p, index) => `
+        <div class="property-card">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <h6 class="fw-bold">${p.name}</h6>
+                    <div class="text-muted small"><i class="fas fa-map-marker-alt"></i> ${p.location}</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="fw-bold text-primary">Rs. ${p.price.toLocaleString()}/month</div>
+                    <div class="text-muted small">${p.beds} bed • ${p.baths} bath • ${p.type}</div>
+                </div>
+                <div class="col-md-2">
+                    <span class="status-badge ${p.status === 'available' ? 'status-active' : 'status-rented'}">${p.status || 'Available'}</span>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button class="btn btn-danger btn-sm" onclick="deleteProperty(${index})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ============================================
+// DELETE PROPERTY
+// ============================================
+function deleteProperty(index) {
+    if (confirm('Are you sure you want to delete this property?')) {
+        let allProperties = JSON.parse(localStorage.getItem('allProperties') || '[]');
+        const myProperties = allProperties.filter(p => p.sellerEmail === currentUser.email);
+        const propertyToDelete = myProperties[index];
+        allProperties = allProperties.filter(p => p.id !== propertyToDelete.id);
+        localStorage.setItem('allProperties', JSON.stringify(allProperties));
+        loadProperties();
+        showNotification('Property deleted successfully');
+    }
+}
+
+// ============================================
+// NOTIFICATION
+// ============================================
+function showNotification(message) {
+    const n = document.createElement('div');
+    n.className = 'toast-notification';
+    n.style.cssText = 'position:fixed;top:80px;right:20px;z-index:9999;background:white;border-radius:12px;padding:15px 20px;box-shadow:0 10px 25px rgba(0,0,0,0.1);border-left:4px solid #10B981;animation:slideIn 0.3s ease;min-width:300px;';
+    n.innerHTML = `<i class="fas fa-check-circle" style="color:#10B981;"></i> ${message}`;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 3000);
+}
+
+// Add animation style
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+`;
+document.head.appendChild(style);
+
+// ============================================
+// LOAD ON PAGE START
+// ============================================
+if (currentUser) {
+    loadProperties();
+}
+</script>
+
+</body>
+</html>
