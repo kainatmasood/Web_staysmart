@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - StaySmart AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; padding-top: 70px; }
+        
+        .navbar { background: white; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; top: 0; width: 100%; z-index: 1000; }
+        .navbar-brand { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .dashboard-wrapper { display: flex; min-height: calc(100vh - 70px); }
+        
+        .sidebar { width: 280px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.05); padding: 30px 0; position: fixed; height: calc(100vh - 70px); overflow-y: auto; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { margin-bottom: 5px; }
+        .sidebar-menu a { display: flex; align-items: center; padding: 12px 25px; color: #4b5563; text-decoration: none; transition: 0.3s; border-left: 3px solid transparent; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background: #f3f4f6; color: #667eea; border-left-color: #667eea; }
+        .sidebar-menu a i { width: 25px; margin-right: 10px; }
+        
+        .main-content { margin-left: 280px; padding: 30px; width: 100%; }
+        
+        .stat-card { background: white; border-radius: 20px; padding: 25px; transition: 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .stat-icon { width: 60px; height: 60px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+        .stat-icon i { font-size: 1.5rem; color: white; }
+        .stat-number { font-size: 2rem; font-weight: 800; color: #1f2937; }
+        
+        .property-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; transition: 0.3s; cursor: pointer; border: 1px solid #e5e7eb; }
+        .property-card:hover { transform: translateX(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        .welcome-card { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 20px; padding: 30px; color: white; margin-bottom: 30px; }
+        
+        .badge-seller { background: #10b981; color: white; padding: 2px 10px; border-radius: 20px; font-size: 0.7rem; }
+        
+        @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="container">
+        <a class="navbar-brand" href="index.html"><i class="fas fa-search"></i> StaySmart AI</a>
+        <div class="d-flex align-items-center">
+            <span class="badge bg-primary me-3">🔍 Seeker</span>
+            <img src="https://ui-avatars.com/api/?background=667eea&color=fff&name=User" style="width: 40px; height: 40px; border-radius: 50%;">
+            <span class="ms-2 fw-bold" id="userName">Seeker</span>
+        </div>
+    </div>
+</nav>
+
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="text-center mb-4">
+            <img src="https://ui-avatars.com/api/?background=667eea&color=fff&size=80&name=Seeker" style="width: 80px; height: 80px; border-radius: 50%;">
+            <h5 class="mt-2" id="sidebarUserName">Seeker</h5>
+            <p class="text-muted small" id="userEmail">seeker@example.com</p>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="active" data-tab="overview"><i class="fas fa-tachometer-alt"></i> Overview</a></li>
+            <li><a href="#" data-tab="properties"><i class="fas fa-building"></i> Available Properties</a></li>
+            <li><a href="#" data-tab="bookings"><i class="fas fa-calendar-check"></i> My Bookings</a></li>
+            <li><a href="#" data-tab="wishlist"><i class="fas fa-heart"></i> Wishlist</a></li>
+            <li><a href="#" data-tab="settings"><i class="fas fa-cog"></i> Settings</a></li>
+            <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Overview -->
+        <div id="overviewTab">
+            <div class="welcome-card">
+                <h2>Welcome back, <span id="welcomeUserName">Seeker</span>! 🔍</h2>
+                <p>Find your perfect home from properties listed by verified landlords.</p>
+            </div>
+            
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-building"></i></div>
+                        <div class="stat-number" id="totalProperties">0</div>
+                        <div>Properties Available</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                        <div class="stat-number" id="myBookings">0</div>
+                        <div>My Bookings</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-heart"></i></div>
+                        <div class="stat-number" id="wishlistCount">0</div>
+                        <div>Wishlist</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-number" id="landlordsCount">0</div>
+                        <div>Landlords</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Featured Properties -->
+            <div class="bg-white rounded-3 p-4">
+                <h4><i class="fas fa-star text-warning"></i> Featured Properties</h4>
+                <div id="featuredProperties"></div>
+            </div>
+        </div>
+        
+        <!-- Properties Tab -->
+        <div id="propertiesTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-building"></i> Available Properties</h3>
+            <div id="allPropertiesList"></div>
+        </div>
+        
+        <!-- Bookings Tab -->
+        <div id="bookingsTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-calendar-check"></i> My Bookings</h3>
+            <div id="myBookingsList"></div>
+        </div>
+        
+        <!-- Wishlist Tab -->
+        <div id="wishlistTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-heart"></i> Wishlist</h3>
+            <div id="wishlistList"></div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div id="settingsTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-cog"></i> Settings</h3>
+            <div class="bg-white p-4 rounded-3">
+                <form id="profileForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label>Full Name</label>
+                                <input type="text" class="form-control" id="profileName">
+                            </div>
+                            <div class="mb-3">
+                                <label>Email</label>
+                                <input type="email" class="form-control" id="profileEmail">
+                            </div>
+                            <div class="mb-3">
+                                <label>Phone</label>
+                                <input type="tel" class="form-control" id="profilePhone">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label>Monthly Budget (PKR)</label>
+                                <input type="number" class="form-control" id="profileBudget">
+                            </div>
+                            <div class="mb-3">
+                                <label>Preferred Location</label>
+                                <input type="text" class="form-control" id="profileLocation">
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentUser = null;
+let allProperties = [];
+
+function checkAuth() {
+    const user = JSON.parse(localStorage.getItem('staySmartUser'));
+    if (!user) {
+        window.location.href = 'login.html';
+        return;
+    }
+    if (user.role === 'seller') {
+        alert('This page is for property seekers. Redirecting to landlord dashboard.');
+        window.location.href = 'seller-dashboard.html';
+        return;
+    }
+    currentUser = user;
+    loadData();
+}
+
+function loadData() {
+    // Load all properties from shared storage (including those added by sellers)
+    allProperties = JSON.parse(localStorage.getItem('allProperties') || '[]');
+    
+    // Get user bookings
+    const allBookings = JSON.parse(localStorage.getItem('allBookings') || '[]');
+    const userBookings = allBookings.filter(b => b.userEmail === currentUser.email);
+    
+    // Get wishlist
+    const wishlist = JSON.parse(localStorage.getItem('userWishlist_' + currentUser.email) || '[]');
+    
+    updateStats(userBookings, wishlist);
+    loadFeaturedProperties();
+    loadAllProperties();
+    loadMyBookings(userBookings);
+    loadWishlist(wishlist);
+}
+
+function updateStats(bookings, wishlist) {
+    document.getElementById('totalProperties').textContent = allProperties.length;
+    document.getElementById('myBookings').textContent = bookings.length;
+    document.getElementById('wishlistCount').textContent = wishlist.length;
+    
+    // Count unique landlords (sellers who listed properties)
+    const landlords = new Set(allProperties.map(p => p.sellerEmail));
+    document.getElementById('landlordsCount').textContent = landlords.size;
+}
+
+function loadFeaturedProperties() {
+    const container = document.getElementById('featuredProperties');
+    const featured = allProperties.slice(0, 6);
+    if (featured.length === 0) {
+        container.innerHTML = '<p class="text-muted">No properties available yet. Check back soon!</p>';
+        return;
+    }
+    container.innerHTML = featured.map(p => `
+        <div class="property-card" onclick="bookProperty('${p.name}')">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <h6 class="fw-bold">${p.name}</h6>
+                    <div class="text-muted small"><i class="fas fa-map-marker-alt"></i> ${p.location}</div>
+                    <span class="badge-seller">👤 ${p.sellerName || 'Landlord'}</span>
+                </div>
+                <div class="col-md-3">
+                    <div class="fw-bold text-primary">Rs. ${p.price.toLocaleString()}/month</div>
+                    <div class="text-muted small">${p.beds} bed • ${p.baths} bath</div>
+                </div>
+                <div class="col-md-3">
+                    <span class="badge bg-success">Available</span>
+                    <div class="text-muted small">${p.type} • ${p.lifestyle}</div>
+                </div>
+                <div class="col-md-2 text-end">
+                    <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); bookProperty('${p.name}')">
+                        <i class="fas fa-calendar-check"></i> Book
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); toggleWishlist('${p.name}')">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadAllProperties() {
+    const container = document.getElementById('allPropertiesList');
+    if (allProperties.length === 0) {
+        container.innerHTML = '<p class="text-muted">No properties available. Landlords will list properties here.</p>';
+        return;
+    }
+    container.innerHTML = allProperties.map(p => `
+        <div class="property-card" onclick="bookProperty('${p.name}')">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <h6 class="fw-bold">${p.name}</h6>
+                    <div class="text-muted small"><i class="fas fa-map-marker-alt"></i> ${p.location}</div>
+                    <span class="badge-seller">👤 ${p.sellerName || 'Landlord'}</span>
+                </div>
+                <div class="col-md-2">
+                    <div class="fw-bold text-primary">Rs. ${p.price.toLocaleString()}</div>
+                    <div class="text-muted small">/month</div>
+                </div>
+                <div class="col-md-2">
+                    <div><i class="fas fa-bed"></i> ${p.beds} beds</div>
+                    <div><i class="fas fa-bath"></i> ${p.baths} baths</div>
+                </div>
+                <div class="col-md-2">
+                    <span class="badge bg-success">Available</span>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); bookProperty('${p.name}')">
+                        <i class="fas fa-calendar-check"></i> Book Now
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); toggleWishlist('${p.name}')">
+                        <i class="fas fa-heart"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function bookProperty(propertyName) {
+    const property = allProperties.find(p => p.name === propertyName);
+    if (!property) return;
+    
+    const duration = prompt('Enter duration in months:', '6');
+    if (!duration) return;
+    
+    const checkIn = prompt('Enter check-in date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+    if (!checkIn) return;
+    
+    const total = property.price * parseInt(duration);
+    
+    const booking = {
+        id: Date.now(),
+        propertyName: property.name,
+        propertyLocation: property.location,
+        userName: currentUser.name,
+        userEmail: currentUser.email,
+        sellerEmail: property.sellerEmail,
+        checkIn: checkIn,
+        duration: duration,
+        total: total,
+        status: 'confirmed',
+        date: new Date().toISOString()
+    };
+    
+    // Save booking
+    const allBookings = JSON.parse(localStorage.getItem('allBookings') || '[]');
+    allBookings.push(booking);
+    localStorage.setItem('allBookings', JSON.stringify(allBookings));
+    
+    // Update property status
+    let allProps = JSON.parse(localStorage.getItem('allProperties') || '[]');
+    const propIndex = allProps.findIndex(p => p.name === propertyName);
+    if (propIndex !== -1) {
+        allProps[propIndex].status = 'rented';
+        localStorage.setItem('allProperties', JSON.stringify(allProps));
+    }
+    
+    showNotification(`✅ Booking confirmed for ${propertyName}! Total: Rs. ${total.toLocaleString()}`);
+    loadData();
+}
+
+function toggleWishlist(propertyName) {
+    let wishlist = JSON.parse(localStorage.getItem('userWishlist_' + currentUser.email) || '[]');
+    const index = wishlist.indexOf(propertyName);
+    if (index === -1) {
+        wishlist.push(propertyName);
+        showNotification('❤️ Added to wishlist!');
+    } else {
+        wishlist.splice(index, 1);
+        showNotification('🗑️ Removed from wishlist.');
+    }
+    localStorage.setItem('userWishlist_' + currentUser.email, JSON.stringify(wishlist));
+    loadData();
+}
+
+function loadMyBookings(bookings) {
+    const container = document.getElementById('myBookingsList');
+    if (bookings.length === 0) {
+        container.innerHTML = '<p class="text-muted">You haven\'t made any bookings yet.</p>';
+        return;
+    }
+    container.innerHTML = bookings.map(b => `
+        <div class="property-card">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <h6 class="fw-bold">${b.propertyName}</h6>
+                    <div class="text-muted small"><i class="fas fa-map-marker-alt"></i> ${b.propertyLocation}</div>
+                </div>
+                <div class="col-md-3">
+                    <div>📅 ${b.checkIn}</div>
+                    <div>📆 ${b.duration} months</div>
+                </div>
+                <div class="col-md-2">
+                    <div class="fw-bold text-primary">Rs. ${b.total.toLocaleString()}</div>
+                </div>
+                <div class="col-md-3 text-end">
+                    <span class="badge bg-success">${b.status}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadWishlist(wishlist) {
+    const container = document.getElementById('wishlistList');
+    if (wishlist.length === 0) {
+        container.innerHTML = '<p class="text-muted">No properties saved yet.</p>';
+        return;
+    }
+    const wishlistProps = allProperties.filter(p => wishlist.includes(p.name));
+    container.innerHTML = wishlistProps.map(p => `
+        <div class="property-card">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h6 class="fw-bold">${p.name}</h6>
+                    <div class="text-muted small"><i class="fas fa-map-marker-alt"></i> ${p.location}</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="fw-bold text-primary">Rs. ${p.price.toLocaleString()}/month</div>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button class="btn btn-sm btn-primary" onclick="bookProperty('${p.name}')">
+                        <i class="fas fa-calendar-check"></i> Book
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="toggleWishlist('${p.name}')">
+                        <i class="fas fa-heart"></i> Remove
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function switchTab(tab) {
+    const tabs = ['overview', 'properties', 'bookings', 'wishlist', 'settings'];
+    tabs.forEach(t => {
+        document.getElementById(t + 'Tab').style.display = t === tab ? 'block' : 'none';
+    });
+    document.querySelectorAll('.sidebar-menu a').forEach(a => {
+        a.classList.toggle('active', a.dataset.tab === tab);
+    });
+}
+
+function showNotification(message) {
+    const div = document.createElement('div');
+    div.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+    div.style.zIndex = '9999';
+    div.innerHTML = message;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+}
+
+function logout() {
+    localStorage.removeItem('staySmartUser');
+    window.location.href = 'index.html';
+}
+
+// Tab switching
+document.querySelectorAll('.sidebar-menu a[data-tab]').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab(link.dataset.tab);
+    });
+});
+
+document.getElementById('profileForm')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    showNotification('✅ Profile updated successfully!');
+});
+
+function loadUserData() {
+    if (currentUser) {
+        document.getElementById('userName').textContent = currentUser.name;
+        document.getElementById('sidebarUserName').textContent = currentUser.name;
+        document.getElementById('welcomeUserName').textContent = currentUser.name;
+        document.getElementById('userEmail').textContent = currentUser.email;
+        document.getElementById('profileName').value = currentUser.name;
+        document.getElementById('profileEmail').value = currentUser.email;
+        document.getElementById('profilePhone').value = currentUser.phone || '';
+        document.getElementById('profileBudget').value = currentUser.budget || '';
+    }
+}
+
+checkAuth();
+loadUserData();
+</script>
+
+</body>
+</html>

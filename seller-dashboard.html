@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landlord Dashboard - StaySmart AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 (Fixed) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; padding-top: 70px; }
+        
+        .navbar { background: white; padding: 1rem 0; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: fixed; top: 0; width: 100%; z-index: 1000; }
+        .navbar-brand { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .dashboard-wrapper { display: flex; min-height: calc(100vh - 70px); }
+        
+        .sidebar { width: 280px; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.05); padding: 30px 0; position: fixed; height: calc(100vh - 70px); overflow-y: auto; }
+        .sidebar .user-avatar { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 15px; display: block; }
+        .sidebar .user-name { text-align: center; font-weight: 700; color: #1f2937; }
+        .sidebar .user-email { text-align: center; color: #6b7280; font-size: 0.85rem; }
+        
+        .sidebar-menu { list-style: none; padding: 0; margin: 20px 0 0; }
+        .sidebar-menu li { margin-bottom: 3px; }
+        .sidebar-menu a { display: flex; align-items: center; padding: 12px 25px; color: #4b5563; text-decoration: none; transition: 0.3s; border-left: 3px solid transparent; gap: 12px; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background: #f3f4f6; color: #667eea; border-left-color: #667eea; }
+        .sidebar-menu a i { width: 20px; text-align: center; font-size: 1.1rem; }
+        
+        .main-content { margin-left: 280px; padding: 30px; width: 100%; }
+        
+        .stat-card { background: white; border-radius: 20px; padding: 25px; transition: 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .stat-icon { width: 60px; height: 60px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 15px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; }
+        .stat-icon i { font-size: 1.5rem; color: white; }
+        .stat-number { font-size: 2rem; font-weight: 800; color: #1f2937; }
+        .stat-label { color: #6b7280; font-size: 0.9rem; }
+        
+        .property-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; transition: 0.3s; border: 1px solid #e5e7eb; }
+        .property-card:hover { transform: translateX(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-pending { background: #fed7aa; color: #92400e; }
+        .status-rented { background: #e0e7ff; color: #3730a3; }
+        
+        .welcome-card { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 20px; padding: 30px; color: white; margin-bottom: 30px; }
+        .welcome-card h2 { font-weight: 700; }
+        .welcome-card p { opacity: 0.9; }
+        
+        .form-control, .form-select { border-radius: 12px; padding: 12px 15px; border: 2px solid #e5e7eb; }
+        .form-control:focus, .form-select:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); outline: none; }
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); border: none; padding: 10px 25px; border-radius: 12px; font-weight: 600; color: white; transition: 0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102,126,234,0.3); }
+        .btn-secondary { background: #e5e7eb; border: none; padding: 10px 25px; border-radius: 12px; font-weight: 600; color: #4b5563; }
+        .btn-secondary:hover { background: #d1d5db; }
+        .btn-sm { padding: 5px 12px; font-size: 0.85rem; }
+        
+        .toast-notification { position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; background: white; border-radius: 12px; padding: 15px 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-left: 4px solid #10B981; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        .quick-action { background: white; padding: 25px; border-radius: 15px; text-align: center; transition: 0.3s; cursor: pointer; }
+        .quick-action:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .quick-action i { font-size: 2rem; margin-bottom: 10px; }
+        .quick-action .fa-plus-circle { color: #667eea; }
+        .quick-action .fa-chart-line { color: #10b981; }
+        .quick-action .fa-bell { color: #f59e0b; }
+        
+        @media (max-width: 768px) { 
+            .sidebar { display: none; } 
+            .sidebar.show { display: block; position: fixed; top: 0; left: 0; width: 280px; height: 100%; z-index: 999; }
+            .main-content { margin-left: 0; } 
+        }
+        
+        .logout-btn { display: flex; align-items: center; gap: 12px; padding: 12px 25px; color: #ef4444; text-decoration: none; border-top: 1px solid #e5e7eb; margin-top: 20px; transition: 0.3s; }
+        .logout-btn:hover { background: #fef2f2; }
+        .logout-btn i { width: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="container">
+        <a class="navbar-brand" href="index.html"><i class="fas fa-home"></i> StaySmart AI</a>
+        <div class="d-flex align-items-center">
+            <span class="badge bg-success me-3">🏠 Landlord</span>
+            <img src="https://ui-avatars.com/api/?background=10b981&color=fff&name=Landlord" style="width: 40px; height: 40px; border-radius: 50%;">
+            <span class="ms-2 fw-bold" id="userName">Landlord</span>
+        </div>
+    </div>
+</nav>
+
+<div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="text-center">
+            <img src="https://ui-avatars.com/api/?background=10b981&color=fff&size=80&name=Landlord" class="user-avatar">
+            <div class="user-name" id="sidebarUserName">Landlord</div>
+            <div class="user-email" id="userEmail">landlord@example.com</div>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="active" data-tab="overview"><i class="fas fa-tachometer-alt"></i> Overview</a></li>
+            <li><a href="#" data-tab="properties"><i class="fas fa-building"></i> My Properties</a></li>
+            <li><a href="#" data-tab="add-property"><i class="fas fa-plus-circle"></i> Add Property</a></li>
+            <li><a href="#" data-tab="bookings"><i class="fas fa-calendar-check"></i> Bookings Received</a></li>
+            <li><a href="#" data-tab="revenue"><i class="fas fa-chart-line"></i> Revenue</a></li>
+            <li><a href="#" class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Overview Tab -->
+        <div id="overviewTab">
+            <div class="welcome-card">
+                <h2>Welcome, <span id="welcomeUserName">Landlord</span>! 🏠</h2>
+                <p>Manage your properties, track bookings, and grow your rental business.</p>
+            </div>
+            
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-building"></i></div>
+                        <div class="stat-number" id="totalProperties">0</div>
+                        <div class="stat-label">Total Properties</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
+                        <div class="stat-number" id="totalBookings">0</div>
+                        <div class="stat-label">Total Bookings</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-number" id="totalTenants">0</div>
+                        <div class="stat-label">Active Tenants</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-number" id="totalRevenue">0</div>
+                        <div class="stat-label">Revenue (PKR)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-3 p-4 mb-4">
+                <h5><i class="fas fa-clock"></i> Recent Bookings</h5>
+                <div id="recentBookings"><p class="text-muted">No bookings yet. List your properties to start receiving bookings!</p></div>
+            </div>
+            
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="quick-action" onclick="switchTab('add-property')">
+                        <i class="fas fa-plus-circle"></i>
+                        <h6>List New Property</h6>
+                        <button class="btn btn-primary btn-sm">Add Now</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="quick-action" onclick="switchTab('revenue')">
+                        <i class="fas fa-chart-line"></i>
+                        <h6>View Analytics</h6>
+                        <button class="btn btn-success btn-sm">View</button>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="quick-action" onclick="switchTab('bookings')">
+                        <i class="fas fa-bell"></i>
+                        <h6>Booking Alerts</h6>
+                        <button class="btn btn-warning btn-sm">Check</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- My Properties Tab -->
+        <div id="propertiesTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-building"></i> My Properties</h3>
+            <div id="myProperties"><p class="text-muted">No properties listed yet.</p></div>
+        </div>
+        
+        <!-- Add Property Tab -->
+        <div id="addPropertyTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-plus-circle"></i> Add New Property</h3>
+            <div class="bg-white p-4 rounded-3">
+                <form id="addPropertyForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Property Name</label>
+                            <input type="text" class="form-control" id="propName" placeholder="e.g., Luxury Studio F-7" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Location</label>
+                            <input type="text" class="form-control" id="propLocation" placeholder="e.g., Islamabad" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Monthly Rent (PKR)</label>
+                            <input type="number" class="form-control" id="propPrice" placeholder="45000" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Bedrooms</label>
+                            <select class="form-select" id="propBeds">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Bathrooms</label>
+                            <select class="form-select" id="propBaths">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Property Type</label>
+                            <select class="form-select" id="propType">
+                                <option>Apartment</option>
+                                <option>House</option>
+                                <option>Studio</option>
+                                <option>Penthouse</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Lifestyle</label>
+                            <select class="form-select" id="propLifestyle">
+                                <option>Quiet</option>
+                                <option>Social</option>
+                                <option>Family</option>
+                                <option>Professional</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Description</label>
+                            <textarea class="form-control" id="propDescription" rows="3" placeholder="Describe your property..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Image URL</label>
+                            <input type="text" class="form-control" id="propImage" placeholder="https://images.unsplash.com/photo-...">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Amenities (comma separated)</label>
+                            <input type="text" class="form-control" id="propAmenities" placeholder="WiFi, AC, Parking, Security">
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> List Property</button>
+                            <button type="button" class="btn btn-secondary" onclick="switchTab('properties')">Cancel</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Bookings Tab -->
+        <div id="bookingsTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-calendar-check"></i> Bookings Received</h3>
+            <div id="bookingsList"><p class="text-muted">No bookings received yet.</p></div>
+        </div>
+        
+        <!-- Revenue Tab -->
+        <div id="revenueTab" style="display: none;">
+            <h3 class="mb-4"><i class="fas fa-chart-line"></i> Revenue Analytics</h3>
+            <div class="bg-white p-4 rounded-3">
+                <div id="revenueStats"><p class="text-muted">No revenue data yet.</p></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================
+// CHECK LOGIN STATUS
+// ============================================
+function checkAuth() {
+    const user = JSON.parse(localStorage.getItem('staySmartUser'));
+    if (!user) {
+        window.location.href = 'index.html';
+        return null;
+    }
+    if (user.role !== 'landlord') {
+        alert('This page is for landlords only.');
+        window.location.href = 'dashboard.html';
+        return null;
+    }
+    return user;
+}
+
+// ============================================
+// LOAD DASHBOARD DATA
+// ============================================
+let currentUser = null;
+let allProperties = [];
+let allBookings = [];
+
+function loadDashboard() {
+    currentUser = checkAuth();
+    if (!currentUser) return;
+    
+    // Load properties from localStorage
+    const allProps = JSON.parse(localStorage.getItem('allProperties') || '[]');
+    
+    // Filter to show only this landlord's properties
+    allProperties = allProps.filter(p => p.sellerEmail === currentUser.email);
+    
+    // Load bookings
+    const allBks = JSON.parse(localStorage.getItem('allBookings') || '[]');
+    const sellerPropertyNames = allProperties.map(p => p.name);
+    allBookings = allBks.filter(b => sellerPropertyNames.includes(b.propertyName));
+    
+    updateUI();
+    loadRecentBookings();
+    loadMyProperties();
+    loadRevenueStats();
+    
+    // Update user info
+    document.getElementById('userName').textContent = currentUser.name;
+    document.getElementById('sidebarUserName').textContent = currentUser.name;
+    document.getElementById('welcomeUserName').textContent = currentUser.name;
+    document.getElementById('userEmail').textContent = currentUser.email;
+}
+
+function updateUI() {
+    document.getElementById('totalProperties').textContent = allProperties.length;
+    document.getElementById('totalBookings').textContent = allBookings.length;
+    
+    const tenants = new Set(allBookings.map(b => b.userEmail));
+    document.getElementById('totalTenants').textContent = tenants.size;
+    
+    let revenue = 0;
+    allBookings.forEach(b => revenue += parseInt(b.total || 0));
+    document.getElementById('totalRevenue').textContent = revenue.toLocaleString();
+}
+
+function loadRecentBookings() {
+    const container = document.getElementById('recentBookings');
+    if (allBookings.length === 0) {
+        container.innerHTML = '<p class="text-muted">No bookings yet. List your properties to start receiving bookings!</p>';
+        return;
+    }
+    container.innerHTML = allBookings.slice(0, 5).map(b => `
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+            <div>
+                <strong>${b.propertyName}</strong>
+                <div class="text-muted small">${b.userName} • ${b.checkIn}</div>
+            </div>
+            <div>
+                <span class="status-badge status-active">${b.status}</span>
+                <div class="fw-bold">Rs. ${b.total.toLocaleString()}</div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadMyProperties() {
+    const container = document.getElementById('myProperties');
+    if (allProperties.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                <h5>No Properties Listed</h5>
+                <p class="text-muted">Start by adding your first property.</p>
+                <button class="btn btn-primary" onclick="switchTab('add-property')">Add Property</button>
+            </div>
+        `;
+        return;
+    }
+    container.innerHTML = allProperties.map((p, index) => `
+        <div class="property-card">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <h6 class="fw-bold">${p.name}</h6>
+                    <div class="text-muted small"><i class="fas fa-map-marker-alt"></i> ${p.location}</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="fw-bold text-primary">Rs. ${p.price.toLocaleString()}/month</div>
+                    <div class="text-muted small">${p.beds} bed • ${p.baths} bath</div>
+                </div>
+                <div class="col-md-2">
+                    <span class="status-badge ${p.status === 'available' ? 'status-active' : 'status-rented'}">${p.status || 'Available'}</span>
+                </div>
+                <div class="col-md-3 text-end">
+                    <button class="btn btn-danger btn-sm" onclick="deleteProperty(${index})">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadRevenueStats() {
+    const container = document.getElementById('revenueStats');
+    let total = 0;
+    allBookings.forEach(b => total += parseInt(b.total || 0));
+    
+    if (allBookings.length === 0) {
+        container.innerHTML = '<p class="text-muted">No revenue data yet. Start getting bookings!</p>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="bg-light p-3 rounded">
+                    <h6>Total Revenue</h6>
+                    <h3 class="text-primary">Rs. ${total.toLocaleString()}</h3>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="bg-light p-3 rounded">
+                    <h6>Total Bookings</h6>
+                    <h3 class="text-success">${allBookings.length}</h3>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="bg-light p-3 rounded">
+                    <h6>Booking Breakdown</h6>
+                    ${allBookings.map(b => `
+                        <div class="d-flex justify-content-between border-bottom py-1">
+                            <span>${b.propertyName}</span>
+                            <span class="fw-bold">Rs. ${b.total.toLocaleString()}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================
+// ADD PROPERTY
+// ============================================
+document.getElementById('addPropertyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Get image URL - make sure it's valid
+    let imageUrl = document.getElementById('propImage').value.trim();
+    if (!imageUrl) {
+        imageUrl = 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267';
+    }
+    
+    const property = {
+        id: Date.now(),
+        name: document.getElementById('propName').value,
+        location: document.getElementById('propLocation').value,
+        price: parseInt(document.getElementById('propPrice').value),
+        beds: parseInt(document.getElementById('propBeds').value),
+        baths: parseInt(document.getElementById('propBaths').value),
+        type: document.getElementById('propType').value,
+        lifestyle: document.getElementById('propLifestyle').value,
+        description: document.getElementById('propDescription').value,
+        image: imageUrl,  // Make sure this is set
+        image_url: imageUrl,  // Also set this for compatibility
+        amenities: document.getElementById('propAmenities').value,
+        status: 'available',
+        sellerEmail: currentUser.email,
+        sellerName: currentUser.name,
+        date: new Date().toISOString(),
+        rating: 4.5,
+        isAvailable: true
+    };
+    
+    // ... rest of code
+});
+    
+    // Save to shared storage
+    let allProps = JSON.parse(localStorage.getItem('allProperties') || '[]');
+    allProps.push(property);
+    localStorage.setItem('allProperties', JSON.stringify(allProps));
+    
+    showNotification('✅ Property listed successfully!');
+    this.reset();
+    loadDashboard();
+    switchTab('properties');
+
+// ============================================
+// DELETE PROPERTY
+// ============================================
+function deleteProperty(index) {
+    if (confirm('Are you sure you want to delete this property?')) {
+        let allProps = JSON.parse(localStorage.getItem('allProperties') || '[]');
+        const propertyToDelete = allProperties[index];
+        allProps = allProps.filter(p => p.id !== propertyToDelete.id);
+        localStorage.setItem('allProperties', JSON.stringify(allProps));
+        loadDashboard();
+        showNotification('🗑️ Property deleted.');
+    }
+}
+
+// ============================================
+// TAB SWITCHING
+// ============================================
+function switchTab(tab) {
+    const tabs = ['overview', 'properties', 'add-property', 'bookings', 'revenue'];
+    tabs.forEach(t => {
+        const el = document.getElementById(t + 'Tab');
+        if (el) el.style.display = t === tab ? 'block' : 'none';
+    });
+    document.querySelectorAll('.sidebar-menu a').forEach(a => {
+        a.classList.toggle('active', a.dataset.tab === tab);
+    });
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+function showNotification(message) {
+    const n = document.createElement('div');
+    n.className = 'toast-notification';
+    n.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 3000);
+}
+
+// ============================================
+// LOGOUT
+// ============================================
+function logout() {
+    localStorage.removeItem('staySmartUser');
+    window.location.href = 'index.html';
+}
+
+// ============================================
+// EVENT LISTENERS
+// ============================================
+document.querySelectorAll('.sidebar-menu a[data-tab]').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab(link.dataset.tab);
+    });
+});
+
+// ============================================
+// LOAD ON PAGE START
+// ============================================
+loadDashboard();
+</script>
+</body>
+</html>
